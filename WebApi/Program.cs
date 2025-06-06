@@ -1,4 +1,5 @@
 using Business.Interfaces;
+using Business.Services;
 using Data.Context;
 using Data.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<BookingDbContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IBookingService, IBookingService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 app.MapOpenApi();
