@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option csharp_namespace = "Protos";
+
+message GetTicketsSoldAmountAllEventsRequest {
+
+}
+
+message GetTicketsSoldAmountAllEventsResponse {
+	bool succeeded = 1;
+    int32 statusCode = 2;
+    string errorMessage = 3;
+    repeated EventTicketsSold eventTicketsSold = 4;
+}
+
+message EventTicketsSold {
+	string eventId = 1;
+	int32 ticketsSold = 2;
+}
+
+
+service GrpcBooking {
+	rpc GetTicketsSoldAmountAllEvents(GetTicketsSoldAmountAllEventsRequest) returns (GetTicketsSoldAmountAllEventsResponse);
+}

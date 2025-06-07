@@ -2,6 +2,7 @@ using Business.Interfaces;
 using Business.Services;
 using Data.Context;
 using Data.Repositories;
+using Grpc.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,9 +13,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<BookingDbContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddSwaggerGen();
+builder.Services.AddGrpc();
 
 var app = builder.Build();
 app.MapOpenApi();
+
+app.MapGrpcService<GrpcBookingService>();
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>

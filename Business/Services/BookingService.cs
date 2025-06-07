@@ -1,8 +1,10 @@
 ﻿using Business.Dtos;
+using Business.Dtos.API;
 using Business.Interfaces;
 using Business.Models;
 using Data.Entities;
 using Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -80,27 +82,37 @@ public class BookingService(IBookingRepository bookingRepository) : IBookingServ
         return BookingResult<IEnumerable<Booking>>.Ok(bookings!);
     }
 
-    public async Task<BookingResult<int>> GetTotalTicketsSoldByEventId(string eventId)
+    public async Task<BookingResult<int>> GetTicketsSoldAmountByEventId(string eventId)
     {
         if (string.IsNullOrWhiteSpace(eventId))
             return BookingResult<int>.BadRequest("EventId cannot be null or empty.");
 
-        try
-        {
-            var result = await _bookingRepository.GetAllAsync(where: x => x.EventId == eventId);
-            if (!result.Succeeded)
-                return BookingResult<int>.InternalServerError($"Failed retrieving booking entities. {result.ErrorMessage}");
+        var result = await _bookingRepository.GetAllAsync(where: x => x.EventId == eventId);
+        if (!result.Succeeded)
+            return BookingResult<int>.InternalServerError($"Failed retrieving booking entities. {result.ErrorMessage}");
 
-            var entities = result.Data;
-            int totalTickets = entities?.Sum(x => x.TicketQuantity) ?? 0;
+        var entities = result.Data;
+        int totalTickets = entities?.Sum(x => x.TicketQuantity) ?? 0;
 
-            return BookingResult<int>.Ok(totalTickets);
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex.Message);
-            return BookingResult<int>.InternalServerError($"Exception occured in {MethodBase.GetCurrentMethod()!.Name}");
-        }
+        return BookingResult<int>.Ok(totalTickets);
+    }
+
+    public async Task<BookingResult<IEnumerable<EventTicketsSold>>> GetTicketsSoldAmountAllEvents()
+    {
+        var result = await _bookingRepository.GetAllAsync();
+        if (!result.Succeeded)
+            return BookingResult<IEnumerable<EventTicketsSold>>.InternalServerError($"Failed retrieving booking entities. {result.ErrorMessage}");
+
+        var entities = result.Data;
+        var eventTicketsSold = entities
+            ?.GroupBy(b => b.EventId)
+            .Select(g => new EventTicketsSold
+            {
+                EventId = g.Key,
+                TicketsSold = g.Sum(b => b.TicketQuantity)
+            });
+
+        return BookingResult<IEnumerable<EventTicketsSold>>.Ok(eventTicketsSold!);
     }
 
 
