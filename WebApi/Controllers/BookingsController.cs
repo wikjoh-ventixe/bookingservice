@@ -1,6 +1,7 @@
 ﻿using Business.Dtos;
 using Business.Interfaces;
 using Business.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -9,12 +10,14 @@ namespace WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class BookingsController(IBookingService bookingService) : ControllerBase
 {
     private readonly IBookingService _bookingService = bookingService;
 
     // READ
     [HttpGet]
+    [Authorize(Policy = "UserOnly")]
     public async Task<IActionResult> GetAll()
     {
         var result = await _bookingService.GetAllBookingsAsync();
@@ -41,6 +44,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
 
     // DELETE
     [HttpDelete("{id}")]
+    [Authorize(Policy = "UserOnly")]
     public async Task<IActionResult> Delete(string id)
     {
         if (string.IsNullOrWhiteSpace(id))
